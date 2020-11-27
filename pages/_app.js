@@ -31,7 +31,7 @@ export default function MyApp({ Component, pageProps }) {
 
   const sortList = async (key, order) => {
     const request = await fetch(
-      withQuery("http://localhost:3000/api/filter", {
+      withQuery("https://entrust-biswajit-jena-2020-11-27.vercel.app/api/filter", {
         search: filterValue,
         sortBy: key,
         orderBy: order,
@@ -44,9 +44,9 @@ export default function MyApp({ Component, pageProps }) {
   };
 
   useEffect(async () => {
-    const filterTypes = await fetch("http://localhost:3000/api/job");
+    const filterTypes = await fetch("https://entrust-biswajit-jena-2020-11-27.vercel.app/api/job");
     const request = await fetch(
-      withQuery("http://localhost:3000/api/filter", {
+      withQuery("https://entrust-biswajit-jena-2020-11-27.vercel.app/api/filter", {
         search: "",
         sortBy: "",
         orderBy: "",
@@ -92,7 +92,7 @@ export default function MyApp({ Component, pageProps }) {
                 onChange={async (e) => {
                   const searchString = e.target.value;
                   const request = await fetch(
-                    withQuery("http://localhost:3000/api/filter", {
+                    withQuery("https://entrust-biswajit-jena-2020-11-27.vercel.app/api/filter", {
                       search: searchString,
                       sortBy: _get(sortValue, "sortBy", ""),
                       orderBy: _get(sortValue, "orderBy", ""),
