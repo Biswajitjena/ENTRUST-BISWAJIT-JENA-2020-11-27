@@ -29,7 +29,7 @@ import InputSearchBar from "../components/searchbar";
 import Footer from "./layouts/footer";
 import DepartmentDialogue from "../components/departmentDialogue";
 
-const url = "https://entrust-biswajit-jena-2020-11-27.vercel.app/"
+const url = "http://localhost:3000"
 
 export default function MyApp({ Component, pageProps }) {
   const [jobs, setJobs] = useState([]);
