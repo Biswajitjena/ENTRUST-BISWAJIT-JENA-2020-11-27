@@ -50,3 +50,30 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/deploym
 
 ## Live DEMO Interface
 Open https://entrust-biswajit-jena-2020-11-27.vercel.app/ with your browser to see the result.
+
+## Live Demo Screenshots
+- Desktop View
+
+![Screenshot](Desktop-Main-Screen.png)
+
+- Desktop Expanded View
+
+![Screenshot](Desktop-Expanded.png)
+
+- Show More Department View
+
+![Screenshot](Desktop-Showmore-Dialog.png)
+
+- Mobile Main View
+
+![Screenshot](Mobile-Main.png)
+
+- Mobile Department List View
+
+![Screenshot](Mobile-Department.png)
+
+- Mobile Inner Details View
+
+![Screenshot](Mobile-Inner.png)
+
+
