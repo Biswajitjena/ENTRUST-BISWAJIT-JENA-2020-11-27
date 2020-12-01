@@ -49,7 +49,8 @@ export default function JobList({ Component, jobs, sortList, totalJobs }) {
         <div className="col-lg-12 border-1 pt-4 pb-4">
           <Row>
             <Col className="col ml-20">
-              <strong>7,753</strong> Total job postings
+              {/* <strong>7,753</strong> Total job postings */}
+              <strong>{totalJobs}</strong> Total job postings
             </Col>
             <Col>
               <div className="float-right">
@@ -173,7 +174,7 @@ export default function JobList({ Component, jobs, sortList, totalJobs }) {
                   className="text-left text-dark text-decoration-none custom-btn"
                   as={Button}
                   variant="link"
-                  eventKey={new Date().getTime()}
+                  eventKey={index + 1}
                 >
                   <div className="d-flex">
                     <div className="p-2 flex-shrink-1">
@@ -187,12 +188,12 @@ export default function JobList({ Component, jobs, sortList, totalJobs }) {
                       />
                     </div>
                     <div className="p-2 w-100">
-                      {job.total_jobs_in_hospital} jobs for {job.name}
+                      {_get(job, "items.length", 0)} jobs for {job.name}
                     </div>
                   </div>
                 </Accordion.Toggle>
               </Card.Header>
-              <Accordion.Collapse eventKey={new Date().getTime()}>
+              <Accordion.Collapse eventKey={index + 1}>
                 <div>
                   {_map(_get(job, "items", []), (jobItem, ky) => (
                     <div key={ky}>

@@ -1,6 +1,6 @@
 import Head from "next/head";
 
-import { Navbar, Nav, NavDropdown, Button } from "react-bootstrap";
+import { Navbar, Nav, NavDropdown, Button, Badge } from "react-bootstrap";
 import Avatar from "react-avatar";
 
 const Header = () => (
@@ -43,14 +43,17 @@ const Header = () => (
           <Button className="mr-3 ml-3" variant="outline-primary">
             CREATE JOB
           </Button>
-          <Avatar
-            name="Jack op"
-            maxInitials={2}
-            color="#007bff"
-            size={38}
-            round="50px"
-            textSizeRatio={2}
-          />
+          <div className="notification">
+            <span className="badge">2</span>
+            <Avatar
+              name="Jack op"
+              maxInitials={2}
+              color="#007bff"
+              size={38}
+              round="50px"
+              textSizeRatio={2}
+            />
+          </div>
           <Button
             className="pr-0 pl-0 mr-2 ml-2 bg-white border-0"
             variant="light"

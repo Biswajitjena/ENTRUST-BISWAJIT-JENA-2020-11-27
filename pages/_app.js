@@ -1,7 +1,13 @@
 import "bootstrap/dist/css/bootstrap.min.css";
 import Header from "./layouts/Header";
 import Sidebar from "./layouts/Sidebar";
-import { get as _get, map as _map, isEmpty as _isEmpty } from "lodash";
+import {
+  get as _get,
+  map as _map,
+  isEmpty as _isEmpty,
+  isEqual as _isEqual,
+} from "lodash";
+
 import { useState, useEffect } from "react";
 import withQuery from "with-query";
 import {
@@ -19,7 +25,11 @@ import {
 import "../styles/sidebar.css";
 import "../styles/customStyle.css";
 import JobList from "../components/jobList";
+import InputSearchBar from "../components/searchbar";
 import Footer from "./layouts/footer";
+import DepartmentDialogue from "../components/departmentDialogue";
+
+const url = "http://localhost:3000"
 
 export default function MyApp({ Component, pageProps }) {
   const [jobs, setJobs] = useState([]);
@@ -28,11 +38,20 @@ export default function MyApp({ Component, pageProps }) {
   const [sortValue, setSortValue] = useState({ sortBy: "", orderBy: "" });
   const [totalJobs, setTotalJobs] = useState(0);
   const [searchValue, setSearchValue] = useState("");
+  const [departmentFilter, setDepartmentFilter] = useState([]);
+  const [jobTypeFilter, setJobTypeFilter] = useState([]);
+  const [experienceFilter, setExperienceFilter] = useState([]);
+  const [workScheduleFilter, setWorkScheduleFilter] = useState([]);
+  const [showDepartmentDialogue, setShowDepartmentDialogue] = useState(false);
 
   const sortList = async (key, order) => {
     const request = await fetch(
-      withQuery("https://entrust-biswajit-jena-2020-11-27.vercel.app/api/filter", {
+      withQuery(`${url}/api/filter`, {
         search: filterValue,
+        jobType: jobTypeFilter.toString(),
+        department: departmentFilter.toString(),
+        experience: experienceFilter.toString(),
+        work_schedule: workScheduleFilter.toString(),
         sortBy: key,
         orderBy: order,
       })
@@ -43,13 +62,37 @@ export default function MyApp({ Component, pageProps }) {
     setSortValue({ sortBy: key, orderBy: order });
   };
 
-  useEffect(async () => {
-    const filterTypes = await fetch("https://entrust-biswajit-jena-2020-11-27.vercel.app/api/job");
+  const searchFilter = async (e) => {
+    const searchString = e.target.value;
     const request = await fetch(
-      withQuery("https://entrust-biswajit-jena-2020-11-27.vercel.app/api/filter", {
+      withQuery(`${url}/api/filter`, {
+        search: searchString,
+        jobType: jobTypeFilter.toString(),
+        department: departmentFilter.toString(),
+        experience: experienceFilter.toString(),
+        work_schedule: workScheduleFilter.toString(),
+        sortBy: _get(sortValue, "sortBy", ""),
+        orderBy: _get(sortValue, "orderBy", ""),
+      })
+    );
+    const json = await request.json();
+    console.log("got respons", json);
+    setFilterValue(searchString);
+    setTotalJobs(json.totalJobs);
+    setJobs(json.items);
+  };
+
+  useEffect(async () => {
+    const filterTypes = await fetch(`${url}/api/job`);
+    const request = await fetch(
+      withQuery(`${url}/api/filter`, {
         search: "",
         sortBy: "",
         orderBy: "",
+        jobType: [],
+        department: [],
+        experience: [],
+        work_schedule: [],
       })
     );
     const jsonJobs = await request.json();
@@ -59,56 +102,41 @@ export default function MyApp({ Component, pageProps }) {
     setFilters(jsonFilterTypes.filters);
   }, []);
 
+  const addDepartmentFilter = (departmentFilterValue) => {
+    const filterString = [...departmentFilter];
+    const indexOfElement = filterString.findIndex((val) => val === departmentFilterValue);
+    if (indexOfElement === -1) {
+      filterString.push(departmentFilterValue);
+    } else {
+      filterString.splice(indexOfElement, 1);
+    }
+    setDepartmentFilter(filterString)
+  };
+
+  const searchDeoartmentList = async () => {
+    // const filterString =
+    //   departmentFilter === departmentFilterString ? "" : departmentFilterString;
+    const request = await fetch(
+      withQuery(`${url}/api/filter`, {
+        search: filterValue,
+        jobType: jobTypeFilter.toString(),
+        department: departmentFilter.toString(),
+        experience: experienceFilter.toString(),
+        work_schedule: workScheduleFilter.toString(),
+        sortBy: _get(sortValue, "sortBy", ""),
+        orderBy: _get(sortValue, "orderBy", ""),
+      })
+    );
+    const json = await request.json();
+    // setDepartmentFilter(filterString);
+    setTotalJobs(json.totalJobs);
+    setJobs(json.items);
+  };
+
   return (
     <div className="lighGreyBG">
       <Header />
-      <Container className="mt-3 mt-5 pt-4" fluid>
-        <Row>
-          <Col className="lighGreyBG" sm={12}>
-            <div className="form-group pt-3 input_container has-search">
-              <span className="input_img">
-                <svg
-                  width="1em"
-                  height="1em"
-                  viewBox="0 0 16 16"
-                  class="bi bi-search"
-                  fill="currentColor"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    fill-rule="evenodd"
-                    d="M10.442 10.442a1 1 0 0 1 1.415 0l3.85 3.85a1 1 0 0 1-1.414 1.415l-3.85-3.85a1 1 0 0 1 0-1.415z"
-                  />
-                  <path
-                    fill-rule="evenodd"
-                    d="M6.5 12a5.5 5.5 0 1 0 0-11 5.5 5.5 0 0 0 0 11zM13 6.5a6.5 6.5 0 1 1-13 0 6.5 6.5 0 0 1 13 0z"
-                  />
-                </svg>
-              </span>
-              <input
-                type="text"
-                className="form-control input-search-bar"
-                placeholder="Search for any job, title, keywords or company"
-                onChange={async (e) => {
-                  const searchString = e.target.value;
-                  const request = await fetch(
-                    withQuery("https://entrust-biswajit-jena-2020-11-27.vercel.app/api/filter", {
-                      search: searchString,
-                      sortBy: _get(sortValue, "sortBy", ""),
-                      orderBy: _get(sortValue, "orderBy", ""),
-                    })
-                  );
-                  const json = await request.json();
-                  console.log("got respons", json);
-                  setFilterValue(searchString);
-                  setTotalJobs(json.totalJobs);
-                  setJobs(json.items);
-                }}
-              />
-            </div>
-          </Col>
-        </Row>
-      </Container>
+      <InputSearchBar searchFilter={searchFilter} />
       <Container fluid>
         <Row>
           <Col sm={4}>
@@ -118,7 +146,41 @@ export default function MyApp({ Component, pageProps }) {
                 {_map(_get(filters, "job_type", []), (filter, indx) => (
                   <div key={indx}>
                     <ListGroup.Item className="border-0 pt-0 pb-1">
-                      {filter.key}{" "}
+                      <span
+                        className={`menuLink ${
+                          jobTypeFilter.find((jFilter) =>
+                            _isEqual(jFilter, filter.key)
+                          ) && "text-primary"
+                        }`}
+                        onClick={async () => {
+                          const filterString = [...jobTypeFilter];
+                          const indexOfElement = filterString.findIndex(
+                            (val) => val === filter.key
+                          );
+                          if (indexOfElement === -1) {
+                            filterString.push(filter.key);
+                          } else {
+                            filterString.splice(indexOfElement, 1);
+                          }
+                          const request = await fetch(
+                            withQuery(`${url}/api/filter`, {
+                              search: filterValue,
+                              jobType: filterString.toString(),
+                              department: departmentFilter.toString(),
+                              experience: experienceFilter.toString(),
+                              work_schedule: workScheduleFilter.toString(),
+                              sortBy: _get(sortValue, "sortBy", ""),
+                              orderBy: _get(sortValue, "orderBy", ""),
+                            })
+                          );
+                          const json = await request.json();
+                          setJobTypeFilter(filterString);
+                          setTotalJobs(json.totalJobs);
+                          setJobs(json.items);
+                        }}
+                      >
+                        {filter.key}
+                      </span>{" "}
                       <span className="light-grey-text">
                         {filter.doc_count}
                       </span>
@@ -129,17 +191,70 @@ export default function MyApp({ Component, pageProps }) {
             </Card>
             <Card className="mx-auto mt-3 mb-3 border-0 pt-2 pb-2">
               <strong className="ml-20">DEPARTMENT</strong>
+              <DepartmentDialogue
+                departmentList={_get(filters, "department", [])}
+                show={showDepartmentDialogue}
+                onClick={() => setShowDepartmentDialogue(false)}
+                searchDeoartmentList={searchDeoartmentList}
+                departmentFilterValue={departmentFilter}
+                addDepartmentFilter={addDepartmentFilter}
+              />
               <ListGroup variant="flush">
-                {_map(_get(filters, "department", []), (filter, indx) => (
-                  <div key={indx}>
-                    <ListGroup.Item className="border-0 border-0 pt-0 pb-1">
-                      {filter.key}{" "}
-                      <span className="light-grey-text">
-                        {filter.doc_count}
-                      </span>
-                    </ListGroup.Item>
-                  </div>
-                ))}
+                {_map(
+                  _get(filters, "department", []).slice(0, 10),
+                  (filter, indx) => (
+                    <div key={indx}>
+                      <ListGroup.Item className="border-0 border-0 pt-0 pb-1">
+                        <span
+                          className={`menuLink ${
+                            departmentFilter.find((jFilter) =>
+                              _isEqual(jFilter, filter.key)
+                            ) && "text-primary"
+                          }`}
+                          onClick={async () => {
+                            const filterString = [...departmentFilter];
+                            const indexOfElement = filterString.findIndex(
+                              (val) => val === filter.key
+                            );
+                            if (indexOfElement === -1) {
+                              filterString.push(filter.key);
+                            } else {
+                              filterString.splice(indexOfElement, 1);
+                            }
+                            const request = await fetch(
+                              withQuery("/api/filter", {
+                                search: filterValue,
+                                jobType: jobTypeFilter.toString(),
+                                department: filterString.toString(),
+                                experience: experienceFilter.toString(),
+                                work_schedule: workScheduleFilter.toString(),
+                                sortBy: _get(sortValue, "sortBy", ""),
+                                orderBy: _get(sortValue, "orderBy", ""),
+                              })
+                            );
+                            const json = await request.json();
+                            setDepartmentFilter(filterString);
+                            setTotalJobs(json.totalJobs);
+                            setJobs(json.items);
+                          }}
+                        >
+                          {filter.key}
+                        </span>
+                        <span className="light-grey-text">
+                          &nbsp;{filter.doc_count}
+                        </span>
+                      </ListGroup.Item>
+                    </div>
+                  )
+                )}
+                <ListGroup.Item className="border-0 border-0 pt-0 pb-1">
+                  <span
+                    className="menuLink text-primary"
+                    onClick={() => setShowDepartmentDialogue(true)}
+                  >
+                    Show more
+                  </span>
+                </ListGroup.Item>
               </ListGroup>
             </Card>
             <Card className="mx-auto mt-3 mb-3 border-0 pt-2 pb-2">
@@ -148,7 +263,41 @@ export default function MyApp({ Component, pageProps }) {
                 {_map(_get(filters, "work_schedule", []), (filter, indx) => (
                   <div key={indx}>
                     <ListGroup.Item className="border-0 border-0 pt-0 pb-1">
-                      {filter.key}{" "}
+                      <span
+                        className={`menuLink ${
+                          workScheduleFilter.find((jFilter) =>
+                            _isEqual(jFilter, filter.key)
+                          ) && "text-primary"
+                        }`}
+                        onClick={async () => {
+                          const filterString = [...workScheduleFilter];
+                          const indexOfElement = filterString.findIndex(
+                            (val) => val === filter.key
+                          );
+                          if (indexOfElement === -1) {
+                            filterString.push(filter.key);
+                          } else {
+                            filterString.splice(indexOfElement, 1);
+                          }
+                          const request = await fetch(
+                            withQuery(`${url}/api/filter`, {
+                              search: filterValue,
+                              jobType: jobTypeFilter.toString(),
+                              department: departmentFilter.toString(),
+                              experience: experienceFilter.toString(),
+                              work_schedule: filterString.toString(),
+                              sortBy: _get(sortValue, "sortBy", ""),
+                              orderBy: _get(sortValue, "orderBy", ""),
+                            })
+                          );
+                          const json = await request.json();
+                          setWorkScheduleFilter(filterString);
+                          setTotalJobs(json.totalJobs);
+                          setJobs(json.items);
+                        }}
+                      >
+                        {filter.key}
+                      </span>
                       <span className="light-grey-text">
                         {filter.doc_count}
                       </span>
@@ -163,7 +312,41 @@ export default function MyApp({ Component, pageProps }) {
                 {_map(_get(filters, "experience", []), (filter, indx) => (
                   <div key={indx}>
                     <ListGroup.Item className="border-0 border-0 pt-0 pb-1">
-                      {filter.key}{" "}
+                      <span
+                        className={`menuLink ${
+                          experienceFilter.find((jFilter) =>
+                            _isEqual(jFilter, filter.key)
+                          ) && "text-primary"
+                        }`}
+                        onClick={async () => {
+                          const filterString = [...experienceFilter];
+                          const indexOfElement = filterString.findIndex(
+                            (val) => val === filter.key
+                          );
+                          if (indexOfElement === -1) {
+                            filterString.push(filter.key);
+                          } else {
+                            filterString.splice(indexOfElement, 1);
+                          }
+                          const request = await fetch(
+                            withQuery(`${url}/api/filter`, {
+                              search: filterValue,
+                              jobType: jobTypeFilter.toString(),
+                              department: departmentFilter.toString(),
+                              experience: filterString.toString(),
+                              work_schedule: workScheduleFilter.toString(),
+                              sortBy: _get(sortValue, "sortBy", ""),
+                              orderBy: _get(sortValue, "orderBy", ""),
+                            })
+                          );
+                          const json = await request.json();
+                          setExperienceFilter(filterString);
+                          setTotalJobs(json.totalJobs);
+                          setJobs(json.items);
+                        }}
+                      >
+                        {filter.key}
+                      </span>
                       <span className="light-grey-text">
                         {filter.doc_count}
                       </span>
